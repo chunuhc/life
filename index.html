@@ -1,0 +1,841 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>生活任務整合系統 — Unified Life OS</title>
+    <meta
+      name="description"
+      content="生活任務整合系統：將待辦、補貨提醒與學習進度統一管理，提供 Today Focus、Smart Lists、Progress Insight 三大核心功能，減少資訊分散與決策疲乏。"
+    />
+    <style>
+      /* ========================= CSS:BASE-START 全站共用設定（禁止使用 ID 選擇器） ========================= */
+      :root {
+        --bg: #382c23; /* 深奶茶 / 暖色暗色系背景 */
+        --surface: #3f3429; /* 卡片 / 表面 */
+        --muted: #bfb1a6; /* 輔助文字 */
+        --text: #f3efe9; /* 主要文字 */
+        --accent: #e6a86a; /* 暖色主色（按鈕、重點） */
+        --shadow: rgba(0, 0, 0, 0.35);
+        --container-max: 1100px;
+        --gap: 16px;
+        --radius: 12px;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          "Helvetica Neue", "Noto Sans TC", "Microsoft JhengHei", sans-serif;
+      }
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        height: 100%;
+      }
+      body {
+        margin: 0;
+        background: linear-gradient(180deg, var(--bg) 0%, #2f2319 100%);
+        color: var(--text);
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        line-height: 1.6;
+        padding-top: 64px; /* 為 sticky header 保留空間（mobile-first） */
+      }
+
+      .page {
+        max-width: var(--container-max);
+        margin: 0 auto;
+        padding: 0 16px;
+      }
+      .container {
+        width: 100%;
+        max-width: var(--container-max);
+        margin: 0 auto;
+        padding: 0 12px;
+      }
+
+      img {
+        max-width: 100%;
+        height: auto;
+        display: block;
+        border-radius: 8px;
+      }
+      a {
+        color: var(--accent);
+        text-decoration: none;
+      }
+      a:hover {
+        text-decoration: underline;
+      }
+      button {
+        font: inherit;
+        border: 0;
+        background: var(--accent);
+        color: #fff;
+        padding: 8px 12px;
+        border-radius: 8px;
+        cursor: pointer;
+      }
+      .card {
+        background: linear-gradient(
+          180deg,
+          rgba(255, 255, 255, 0.02),
+          rgba(255, 255, 255, 0.01)
+        );
+        padding: 16px;
+        border-radius: 12px;
+        box-shadow: 0 6px 18px var(--shadow);
+      }
+
+      /* small subtle divider */
+      .divider {
+        height: 1px;
+        background: rgba(255, 255, 255, 0.04);
+        margin: 12px 0;
+        border-radius: 1px;
+      }
+
+      /* layout helpers */
+      .flex {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+      }
+      .stack {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+      .muted {
+        color: var(--muted);
+        font-size: 0.94rem;
+      }
+      .sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+      }
+      /* CSS:BASE-END */
+
+      /* =========================
+   CSS:HERO-START
+   Hero 區相關樣式
+   ========================= */
+      .site-header {
+        position: sticky;
+        top: 0;
+        z-index: 40;
+        backdrop-filter: blur(6px);
+        background: linear-gradient(
+          180deg,
+          rgba(48, 38, 33, 0.8),
+          rgba(48, 38, 33, 0.65)
+        );
+        border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+      }
+      .nav {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 12px 16px;
+        max-width: var(--container-max);
+        margin: 0 auto;
+      }
+      .logo {
+        font-weight: 700;
+        letter-spacing: 0.6px;
+        color: var(--text);
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        font-size: 1rem;
+      }
+      .logo .mark {
+        width: 34px;
+        height: 34px;
+        border-radius: 8px;
+        background: linear-gradient(135deg, var(--accent), #d98f4c);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        color: #fff;
+        font-size: 0.9rem;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+      }
+
+      .nav-list {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+      .nav-link {
+        padding: 8px 10px;
+        border-radius: 8px;
+        color: var(--muted);
+        font-size: 0.95rem;
+      }
+      .nav-link:hover {
+        background: rgba(255, 255, 255, 0.02);
+        color: var(--text);
+      }
+
+      /* hero */
+      .section-hero {
+        padding: 28px 0 20px;
+      }
+      .hero-inner {
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+        align-items: flex-start;
+      }
+      .hero-title {
+        font-size: 1.4rem;
+        margin: 0;
+        line-height: 1.1;
+        color: var(--text);
+      }
+      .hero-sub {
+        margin: 0;
+        color: var(--muted);
+        max-width: 760px;
+      }
+      .hero-cta {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        margin-top: 6px;
+      }
+      .hero-illustration {
+        width: 100%;
+        border-radius: 12px;
+        overflow: hidden;
+        margin-top: 12px;
+      }
+
+      /* small badge row for core features */
+      .feature-row {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-top: 6px;
+      }
+      .feature-pill {
+        background: rgba(255, 255, 255, 0.02);
+        padding: 6px 10px;
+        border-radius: 999px;
+        font-size: 0.86rem;
+        color: var(--muted);
+      }
+
+      /* CSS:HERO-END */
+
+      /* =========================
+   CSS:ABOUT-START
+   About / 其他占位區塊樣式（共用）
+   ========================= */
+      .section {
+        padding: 22px 0;
+      }
+      .section .container-card {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+      .section h2 {
+        margin: 0 0 6px 0;
+        font-size: 1.05rem;
+        color: var(--text);
+      }
+      .section p {
+        margin: 0;
+        color: var(--muted);
+        font-size: 0.95rem;
+      }
+
+      .two-col {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+      .col {
+        flex: 1;
+      }
+      .media {
+        display: block;
+        max-width: 420px;
+      }
+
+      /* small list style */
+      .slot-note {
+        background: rgba(255, 255, 255, 0.01);
+        padding: 10px;
+        border-radius: 10px;
+        border: 1px dashed rgba(255, 255, 255, 0.03);
+        font-size: 0.92rem;
+        color: var(--muted);
+      }
+
+      /* CSS:ABOUT-END */
+
+      /* =========================
+   CSS:SKILLS-START
+   專屬技能 / 模組區塊樣式（占位）
+   ========================= */
+      .module-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 12px;
+      }
+      .module-card {
+        padding: 12px;
+        background: linear-gradient(
+          180deg,
+          rgba(255, 255, 255, 0.01),
+          rgba(0, 0, 0, 0.02)
+        );
+        border-radius: 10px;
+        border: 1px solid rgba(255, 255, 255, 0.02);
+      }
+      .module-title {
+        font-weight: 600;
+        margin-bottom: 6px;
+        font-size: 0.98rem;
+        color: var(--text);
+      }
+      .module-desc {
+        color: var(--muted);
+        font-size: 0.92rem;
+        margin: 0;
+      }
+
+      /* CSS:SKILLS-END */
+
+      /* =========================
+   CSS:PROJECTS-START
+   Projects / 示例卡片
+   ========================= */
+      .project-list {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+      .project-item {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+      }
+      .project-thumb {
+        width: 84px;
+        height: 64px;
+        flex: 0 0 84px;
+        border-radius: 8px;
+        overflow: hidden;
+      }
+      .project-meta {
+        flex: 1;
+      }
+      .project-title {
+        margin: 0;
+        font-size: 0.98rem;
+        color: var(--text);
+      }
+      .project-sub {
+        margin: 4px 0 0 0;
+        color: var(--muted);
+        font-size: 0.9rem;
+      }
+
+      /* CSS:PROJECTS-END */
+
+      /* =========================
+   CSS:CONTACT-START
+   聯絡 / footer 區塊樣式
+   ========================= */
+      .site-footer {
+        padding: 18px 0 34px;
+        border-top: 1px solid rgba(255, 255, 255, 0.03);
+        margin-top: 18px;
+      }
+      .footer-inner {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        align-items: flex-start;
+      }
+      .socials {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+      }
+      .legal {
+        color: var(--muted);
+        font-size: 0.9rem;
+      }
+      /* CSS:CONTACT-END */
+
+      /* =========================
+   CSS:RWD-START
+   手機優先 RWD（至少一個 @media）
+   ========================= */
+      @media (min-width: 520px) {
+        .hero-title {
+          font-size: 1.6rem;
+        }
+        .hero-inner {
+          flex-direction: row;
+          align-items: center;
+          justify-content: space-between;
+        }
+        .hero-copy {
+          flex: 1;
+          padding-right: 18px;
+        }
+        .hero-illustration {
+          flex: 0 0 360px;
+          max-width: 360px;
+        }
+      }
+
+      @media (min-width: 768px) {
+        .page {
+          padding: 0 24px;
+        }
+        .two-col {
+          flex-direction: row;
+        }
+        .module-grid {
+          grid-template-columns: repeat(2, 1fr);
+        }
+        .project-list {
+          flex-direction: row;
+          flex-wrap: wrap;
+        }
+        .project-item {
+          width: 48%;
+        }
+      }
+
+      @media (min-width: 1200px) {
+        body {
+          padding-top: 80px;
+        }
+        .nav {
+          padding: 18px 24px;
+        }
+        .logo {
+          font-size: 1.05rem;
+        }
+        .nav-link {
+          font-size: 1rem;
+          padding: 10px 12px;
+        }
+      }
+      /* CSS:RWD-END */
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <header class="site-header" role="banner">
+        <nav class="nav" aria-label="主要導覽">
+          <div class="logo" aria-hidden="false">
+            <span class="mark">UL</span> <span>生活任務整合系統</span>
+          </div>
+          <div class="nav-list" role="navigation" aria-label="頁面連結">
+            <a class="nav-link" href="#hero">首頁</a>
+            <a class="nav-link" href="#todo">待辦管理</a>
+            <a class="nav-link" href="#restock">補貨系統</a>
+            <a class="nav-link" href="#learning">學習進度</a>
+            <a class="nav-link" href="#contact">聯絡</a>
+          </div>
+        </nav>
+      </header>
+
+      <main>
+        <div class="container">
+          <!-- SECTION:HERO-START -->
+          <section
+            id="hero"
+            class="section section-hero"
+            aria-labelledby="hero-heading"
+          >
+            <div class="hero-inner container-card">
+              <div class="hero-copy">
+                <h1 id="hero-heading" class="hero-title">
+                  生活任務整合系統（Unified Life OS）
+                </h1>
+                <p class="hero-sub">
+                  將「今日重點」、「補貨提醒」與「學習進度」用同一套視覺與邏輯整合，降低資訊碎片、提升專注與決策效率。
+                </p>
+
+                <div class="hero-cta">
+                  <button type="button" aria-label="開始使用">
+                    開始使用範例骨架
+                  </button>
+                  <a
+                    class="nav-link"
+                    href="#todo"
+                    style="
+                      padding: 8px 10px;
+                      background: transparent;
+                      border-radius: 8px;
+                    "
+                    >查看待辦範例</a
+                  >
+                </div>
+
+                <div class="feature-row" aria-hidden="true">
+                  <span class="feature-pill">Today Focus</span>
+                  <span class="feature-pill">Smart Lists</span>
+                  <span class="feature-pill">Progress Insight</span>
+                </div>
+
+                <p class="slot-note" style="margin-top: 10px">
+                  之後會用 Section SDD 的 Prompt 產生正式文案與版面，再把整個
+                  section 貼回來取代這一區。請開發者將新的 section
+                  程式碼整段貼在
+                  <!-- SECTION:HERO-START -->
+                  與
+                  <!-- SECTION:HERO-END -->
+                  之間，完全取代現在這一區。
+                </p>
+              </div>
+
+              <div class="hero-illustration">
+                <img
+                  src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=1200&q=80&auto=format&fit=crop"
+                  alt="人在筆電前規劃日常任務與筆記的工作桌面"
+                  loading="lazy"
+                />
+              </div>
+            </div>
+          </section>
+          <!-- SECTION:HERO-END -->
+
+          <div class="divider" role="separator" aria-hidden="true"></div>
+
+          <!-- SECTION:ABOUT-START -->
+          <section
+            id="about"
+            class="section section-about"
+            aria-labelledby="about-heading"
+          >
+            <div class="container-card">
+              <h2 id="about-heading">專案簡介（占位）</h2>
+              <p>
+                這裡是占位內容：說明此骨架的目的與整體結構，方便開發者理解後續要替換的區塊與資料流。
+              </p>
+              <p class="slot-note">
+                之後會用 Section SDD 的 Prompt 產生新的 section，請把新的
+                section 程式碼整段貼在
+                <!-- SECTION:ABOUT-START -->
+                與
+                <!-- SECTION:ABOUT-END -->
+                之間，完全取代現在這一區。
+              </p>
+            </div>
+          </section>
+          <!-- SECTION:ABOUT-END -->
+
+          <div class="divider" role="separator" aria-hidden="true"></div>
+
+          <!-- SECTION:SKILLS-START -->
+          <section
+            id="skills"
+            class="section section-skills"
+            aria-labelledby="skills-heading"
+          >
+            <div class="container-card">
+              <h2 id="skills-heading">快速模組預覽（占位）</h2>
+              <div class="module-grid" aria-hidden="false">
+                <div class="module-card">
+                  <div class="module-title">Today Focus（占位）</div>
+                  <p class="module-desc">
+                    示意：今日任務卡片、優先級、倒數計時器。
+                  </p>
+                </div>
+                <div class="module-card">
+                  <div class="module-title">Smart Lists（占位）</div>
+                  <p class="module-desc">
+                    示意：基於類型的智能分類與快速篩選。
+                  </p>
+                </div>
+              </div>
+
+              <p class="slot-note">
+                之後會用 Section SDD 的 Prompt 產生新的 section，請把新的
+                section 程式碼整段貼在
+                <!-- SECTION:SKILLS-START -->
+                與
+                <!-- SECTION:SKILLS-END -->
+                之間，完全取代現在這一區。
+              </p>
+            </div>
+          </section>
+          <!-- SECTION:SKILLS-END -->
+
+          <div class="divider" role="separator" aria-hidden="true"></div>
+
+          <!-- SECTION:PROJECTS-START -->
+          <section
+            id="projects"
+            class="section section-projects"
+            aria-labelledby="projects-heading"
+          >
+            <div class="container-card">
+              <h2 id="projects-heading">示例內容區（占位）</h2>
+              <p class="muted">此處展示將被替換的功能模組或範例卡片。</p>
+
+              <div class="project-list" aria-hidden="true">
+                <article class="project-item card">
+                  <div class="project-thumb">
+                    <img
+                      src="https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=800&q=60&auto=format&fit=crop"
+                      alt="筆電工作流程示意圖"
+                      loading="lazy"
+                    />
+                  </div>
+                  <div class="project-meta">
+                    <h3 class="project-title">待辦模組範例</h3>
+                    <p class="project-sub">包含任務清單、標籤、到期日。</p>
+                  </div>
+                </article>
+
+                <article class="project-item card">
+                  <div class="project-thumb">
+                    <img
+                      src="https://images.unsplash.com/photo-1541560052-3b9f8f9f9d2c?w=800&q=60&auto=format&fit=crop"
+                      alt="日常補貨與購物清單示意"
+                      loading="lazy"
+                    />
+                  </div>
+                  <div class="project-meta">
+                    <h3 class="project-title">補貨系統範例</h3>
+                    <p class="project-sub">包含最低庫存提醒與快速補貨清單。</p>
+                  </div>
+                </article>
+              </div>
+
+              <p class="slot-note">
+                之後會用 Section SDD 的 Prompt 產生新的 section，請把新的
+                section 程式碼整段貼在
+                <!-- SECTION:PROJECTS-START -->
+                與
+                <!-- SECTION:PROJECTS-END -->
+                之間，完全取代現在這一區。
+              </p>
+            </div>
+          </section>
+          <!-- SECTION:PROJECTS-END -->
+
+          <div class="divider" role="separator" aria-hidden="true"></div>
+
+          <!-- SECTION:TODO-START -->
+          <section
+            id="todo"
+            class="section section-todo"
+            aria-labelledby="todo-heading"
+          >
+            <div class="container-card">
+              <h2 id="todo-heading">待辦管理 區（占位）</h2>
+              <p>
+                這裡是「待辦管理 區」的占位：示意 Today
+                Focus、任務卡、優先級篩選。未來會替換為互動版元件。
+              </p>
+              <p class="slot-note">
+                之後會用 Section SDD 的 Prompt 產生新的 section，請把新的
+                section 程式碼整段貼在
+                <!-- SECTION:TODO-START -->
+                與
+                <!-- SECTION:TODO-END -->
+                之間，完全取代現在這一區。
+              </p>
+            </div>
+          </section>
+          <!-- SECTION:TODO-END -->
+
+          <div class="divider" role="separator" aria-hidden="true"></div>
+
+          <!-- SECTION:RESTOCK-START -->
+          <section
+            id="restock"
+            class="section section-restock"
+            aria-labelledby="restock-heading"
+          >
+            <div class="container-card">
+              <h2 id="restock-heading">補貨系統 區（占位）</h2>
+              <p>
+                這裡是「補貨系統
+                區」的占位：示意庫存條、補貨建議、下次補貨日期提醒等欄位。
+              </p>
+              <div class="media" style="margin-top: 10px">
+                <img
+                  src="https://images.unsplash.com/photo-1515548212611-0a3f9a393e3f?w=1200&q=60&auto=format&fit=crop"
+                  alt="家中生活用品的儲藏架與補貨示意"
+                  loading="lazy"
+                />
+              </div>
+              <p class="slot-note">
+                之後會用 Section SDD 的 Prompt 產生新的 section，請把新的
+                section 程式碼整段貼在
+                <!-- SECTION:RESTOCK-START -->
+                與
+                <!-- SECTION:RESTOCK-END -->
+                之間，完全取代現在這一區。
+              </p>
+            </div>
+          </section>
+          <!-- SECTION:RESTOCK-END -->
+
+          <div class="divider" role="separator" aria-hidden="true"></div>
+
+          <!-- SECTION:LEARNING-START -->
+          <section
+            id="learning"
+            class="section section-learning"
+            aria-labelledby="learning-heading"
+          >
+            <div class="container-card">
+              <h2 id="learning-heading">學習進度管理 區（占位）</h2>
+              <p>
+                這裡是「學習進度管理
+                區」的占位：示意課程清單、已完成百分比、學習日誌採樣。
+              </p>
+              <p class="slot-note">
+                之後會用 Section SDD 的 Prompt 產生新的 section，請把新的
+                section 程式碼整段貼在
+                <!-- SECTION:LEARNING-START -->
+                與
+                <!-- SECTION:LEARNING-END -->
+                之間，完全取代現在這一區。
+              </p>
+            </div>
+          </section>
+          <!-- SECTION:LEARNING-END -->
+
+          <div class="divider" role="separator" aria-hidden="true"></div>
+
+          <!-- SECTION:CONTACT-START -->
+          <section
+            id="contact"
+            class="section section-contact"
+            aria-labelledby="contact-heading"
+          >
+            <div class="container-card">
+              <h2 id="contact-heading">聯絡（占位）</h2>
+              <p class="muted">
+                如需協助或回報 bug，請使用下方連結聯絡開發者。
+              </p>
+
+              <div
+                class="card"
+                style="display: flex; flex-direction: column; gap: 8px"
+              >
+                <div
+                  class="flex"
+                  style="justify-content: space-between; align-items: center"
+                >
+                  <div>
+                    <div class="muted">Email</div>
+                    <div>
+                      <a href="mailto:hello@example.com">hello@example.com</a>
+                    </div>
+                  </div>
+                  <div>
+                    <div class="muted">GitHub</div>
+                    <div>
+                      <a
+                        href="https://github.com/yourname"
+                        target="_blank"
+                        rel="noopener"
+                        >github.com/yourname</a
+                      >
+                    </div>
+                  </div>
+                  <div>
+                    <div class="muted">LinkedIn</div>
+                    <div>
+                      <a
+                        href="https://www.linkedin.com/in/yourname"
+                        target="_blank"
+                        rel="noopener"
+                        >linkedin.com/in/yourname</a
+                      >
+                    </div>
+                  </div>
+                </div>
+
+                <p class="slot-note">
+                  之後會用 Section SDD 的 Prompt 產生新的 section，請把新的
+                  section 程式碼整段貼在
+                  <!-- SECTION:CONTACT-START -->
+                  與
+                  <!-- SECTION:CONTACT-END -->
+                  之間，完全取代現在這一區。
+                </p>
+              </div>
+            </div>
+          </section>
+          <!-- SECTION:CONTACT-END -->
+        </div>
+        <!-- /.container -->
+      </main>
+
+      <footer class="site-footer" role="contentinfo">
+        <div class="container footer-inner">
+          <div style="display: flex; flex-direction: column; gap: 8px">
+            <div
+              class="flex"
+              style="
+                justify-content: space-between;
+                align-items: center;
+                gap: 12px;
+              "
+            >
+              <div class="muted">
+                © <span id="year"></span> 生活任務整合系統
+              </div>
+              <div class="socials">
+                <a class="nav-link" href="mailto:hello@example.com">Email</a>
+                <a
+                  class="nav-link"
+                  href="https://github.com/yourname"
+                  target="_blank"
+                  rel="noopener"
+                  >GitHub</a
+                >
+                <a
+                  class="nav-link"
+                  href="https://www.linkedin.com/in/yourname"
+                  target="_blank"
+                  rel="noopener"
+                  >LinkedIn</a
+                >
+              </div>
+            </div>
+
+            <div class="legal muted">
+              本頁為 Phase 1 骨架（單一
+              index.html）範例，所有區塊均為占位，方便開發者以 Section SDD
+              逐區替換實作。
+            </div>
+          </div>
+        </div>
+      </footer>
+    </div>
+    <!-- /.page -->
+    <script>
+      // 小幅互動：填入年份、避免空連結（必要性檢查） (function(){ var y = new Date().getFullYear(); var el = document.getElementById('year'); if(el) el.textContent = y; // 對於所有 nav-link，若是錨點滾動則採用平滑滾動 var links = document.querySelectorAll('.nav-link[href^="#"]'); links.forEach(function(a){ a.addEventListener('click', function(e){ var target = document.querySelector(this.getAttribute('href')); if(target){ e.preventDefault(); target.scrollIntoView({behavior:'smooth',block:'start'}); // 更新 focus for accessibility target.setAttribute('tabindex','-1'); target.focus({preventScroll:true}); } }, {passive:false}); }); })();
+    </script>
+  </body>
+</html>
