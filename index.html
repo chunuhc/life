@@ -1,841 +1,1128 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
   <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>生活任務整合系統 — Unified Life OS</title>
-    <meta
-      name="description"
-      content="生活任務整合系統：將待辦、補貨提醒與學習進度統一管理，提供 Today Focus、Smart Lists、Progress Insight 三大核心功能，減少資訊分散與決策疲乏。"
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Unified Life OS</title>
+    <link rel="icon" type="image/png" href="./icon-g.png" />
+    <link rel="apple-touch-icon" href="./icon-g.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="./icon-g.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Noto+Sans+TC:wght@300;400;700&display=swap"
+      rel="stylesheet"
     />
     <style>
-      /* ========================= CSS:BASE-START 全站共用設定（禁止使用 ID 選擇器） ========================= */
       :root {
-        --bg: #382c23; /* 深奶茶 / 暖色暗色系背景 */
-        --surface: #3f3429; /* 卡片 / 表面 */
-        --muted: #bfb1a6; /* 輔助文字 */
-        --text: #f3efe9; /* 主要文字 */
-        --accent: #e6a86a; /* 暖色主色（按鈕、重點） */
-        --shadow: rgba(0, 0, 0, 0.35);
-        --container-max: 1100px;
-        --gap: 16px;
-        --radius: 12px;
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-          "Helvetica Neue", "Noto Sans TC", "Microsoft JhengHei", sans-serif;
+        --bg: #fbf7f2; /* 灰米色 */
+        --card: #fff9f6; /* 奶茶面板 */
+        --muted: #9b8b80; /* 暖咖啡 */
+        --accent: #b87b4a; /* 柔和重點 */
+        --accent-2: #d4a57a;
+        --glass-shadow: 0 8px 22px rgba(30, 20, 15, 0.06);
+        --radius: 14px;
+        --sm-radius: 10px;
+        --max-width: 1100px;
+        font-family: "Inter", "Noto Sans TC", system-ui, -apple-system,
+          "Segoe UI", Roboto, "Helvetica Neue", Arial;
+        color: #2b2b2b;
       }
-      *,
-      *::before,
-      *::after {
+      * {
         box-sizing: border-box;
       }
       html,
       body {
         height: 100%;
-      }
-      body {
         margin: 0;
-        background: linear-gradient(180deg, var(--bg) 0%, #2f2319 100%);
-        color: var(--text);
-        -webkit-font-smoothing: antialiased;
-        -moz-osx-font-smoothing: grayscale;
-        line-height: 1.6;
-        padding-top: 64px; /* 為 sticky header 保留空間（mobile-first） */
+        background: var(--bg);
+      }
+      .wrap {
+        max-width: var(--max-width);
+        margin: 22px auto;
+        padding: 20px;
       }
 
-      .page {
-        max-width: var(--container-max);
-        margin: 0 auto;
-        padding: 0 16px;
-      }
-      .container {
-        width: 100%;
-        max-width: var(--container-max);
-        margin: 0 auto;
-        padding: 0 12px;
-      }
-
-      img {
-        max-width: 100%;
-        height: auto;
-        display: block;
-        border-radius: 8px;
-      }
-      a {
-        color: var(--accent);
-        text-decoration: none;
-      }
-      a:hover {
-        text-decoration: underline;
-      }
-      button {
-        font: inherit;
-        border: 0;
-        background: var(--accent);
-        color: #fff;
-        padding: 8px 12px;
-        border-radius: 8px;
-        cursor: pointer;
-      }
-      .card {
-        background: linear-gradient(
-          180deg,
-          rgba(255, 255, 255, 0.02),
-          rgba(255, 255, 255, 0.01)
-        );
-        padding: 16px;
-        border-radius: 12px;
-        box-shadow: 0 6px 18px var(--shadow);
-      }
-
-      /* small subtle divider */
-      .divider {
-        height: 1px;
-        background: rgba(255, 255, 255, 0.04);
-        margin: 12px 0;
-        border-radius: 1px;
-      }
-
-      /* layout helpers */
-      .flex {
-        display: flex;
-        gap: 12px;
-        align-items: center;
-      }
-      .stack {
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
-      }
-      .muted {
-        color: var(--muted);
-        font-size: 0.94rem;
-      }
-      .sr-only {
-        position: absolute;
-        width: 1px;
-        height: 1px;
-        padding: 0;
-        margin: -1px;
-        overflow: hidden;
-        clip: rect(0, 0, 0, 0);
-        white-space: nowrap;
-        border: 0;
-      }
-      /* CSS:BASE-END */
-
-      /* =========================
-   CSS:HERO-START
-   Hero 區相關樣式
-   ========================= */
-      .site-header {
-        position: sticky;
-        top: 0;
-        z-index: 40;
-        backdrop-filter: blur(6px);
-        background: linear-gradient(
-          180deg,
-          rgba(48, 38, 33, 0.8),
-          rgba(48, 38, 33, 0.65)
-        );
-        border-bottom: 1px solid rgba(255, 255, 255, 0.03);
-        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
-      }
-      .nav {
+      /* Top navigation */
+      header {
         display: flex;
         align-items: center;
         justify-content: space-between;
         gap: 12px;
-        padding: 12px 16px;
-        max-width: var(--container-max);
-        margin: 0 auto;
+        margin-bottom: 18px;
+      }
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
       }
       .logo {
+        width: 46px;
+        height: 46px;
+        border-radius: 12px;
+        background: linear-gradient(180deg, var(--accent-2), var(--accent));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
         font-weight: 700;
-        letter-spacing: 0.6px;
-        color: var(--text);
+        box-shadow: var(--glass-shadow);
+      }
+      .logo img {
+        max-width: 100%;
+      }
+      .title {
+        font-size: 18px;
+        font-weight: 700;
+      }
+      .subtitle {
+        font-size: 12px;
+        color: var(--muted);
+      }
+
+      /* Top tabs nav */
+      nav.top-tabs {
         display: flex;
         gap: 8px;
         align-items: center;
-        font-size: 1rem;
       }
-      .logo .mark {
-        width: 34px;
-        height: 34px;
-        border-radius: 8px;
-        background: linear-gradient(135deg, var(--accent), #d98f4c);
-        display: inline-flex;
+      .tab {
+        padding: 8px 12px;
+        border-radius: 10px;
+        background: transparent;
+        border: none;
+        font-weight: 600;
+        color: var(--muted);
+        cursor: pointer;
+      }
+      .tab.active {
+        background: var(--card);
+        box-shadow: var(--glass-shadow);
+        color: var(--accent);
+      }
+
+      /* Right controls */
+      .controls {
+        display: flex;
+        gap: 8px;
         align-items: center;
-        justify-content: center;
-        font-weight: 700;
+      }
+      .icon-btn {
+        background: var(--accent);
         color: #fff;
-        font-size: 0.9rem;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
-      }
-
-      .nav-list {
-        display: flex;
-        gap: 12px;
-        align-items: center;
-        flex-wrap: wrap;
-      }
-      .nav-link {
-        padding: 8px 10px;
-        border-radius: 8px;
-        color: var(--muted);
-        font-size: 0.95rem;
-      }
-      .nav-link:hover {
-        background: rgba(255, 255, 255, 0.02);
-        color: var(--text);
-      }
-
-      /* hero */
-      .section-hero {
-        padding: 28px 0 20px;
-      }
-      .hero-inner {
-        display: flex;
-        flex-direction: column;
-        gap: 18px;
-        align-items: flex-start;
-      }
-      .hero-title {
-        font-size: 1.4rem;
-        margin: 0;
-        line-height: 1.1;
-        color: var(--text);
-      }
-      .hero-sub {
-        margin: 0;
-        color: var(--muted);
-        max-width: 760px;
-      }
-      .hero-cta {
-        display: flex;
-        gap: 12px;
-        align-items: center;
-        margin-top: 6px;
-      }
-      .hero-illustration {
-        width: 100%;
+        border: none;
+        padding: 8px 12px;
         border-radius: 12px;
-        overflow: hidden;
-        margin-top: 12px;
+        cursor: pointer;
+        box-shadow: 0 6px 14px rgba(184, 123, 74, 0.18);
       }
 
-      /* small badge row for core features */
-      .feature-row {
+      /* Dashboard grid */
+      main {
+        display: grid;
+        grid-template-columns: 1fr 340px;
+        gap: 18px;
+      }
+      @media (max-width: 1000px) {
+        main {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .card {
+        background: var(--card);
+        border-radius: var(--radius);
+        padding: 16px;
+        box-shadow: var(--glass-shadow);
+      }
+      .small {
+        padding: 12px;
+      }
+
+      /* Focus area */
+      .focus-list {
         display: flex;
+        flex-direction: column;
         gap: 10px;
-        flex-wrap: wrap;
-        margin-top: 6px;
       }
-      .feature-pill {
-        background: rgba(255, 255, 255, 0.02);
-        padding: 6px 10px;
-        border-radius: 999px;
-        font-size: 0.86rem;
-        color: var(--muted);
+      .focus-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px;
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.6);
+      }
+      .dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+      }
+      .dot.high {
+        background: #ff8a6b;
+      }
+      .dot.mid {
+        background: #ffd29b;
+      }
+      .dot.low {
+        background: #cfc7b8;
       }
 
-      /* CSS:HERO-END */
-
-      /* =========================
-   CSS:ABOUT-START
-   About / 其他占位區塊樣式（共用）
-   ========================= */
-      .section {
-        padding: 22px 0;
-      }
-      .section .container-card {
+      /* Task list */
+      .task-list {
         display: flex;
         flex-direction: column;
-        gap: 12px;
+        gap: 8px;
       }
-      .section h2 {
-        margin: 0 0 6px 0;
-        font-size: 1.05rem;
-        color: var(--text);
-      }
-      .section p {
-        margin: 0;
-        color: var(--muted);
-        font-size: 0.95rem;
-      }
-
-      .two-col {
+      .task {
         display: flex;
-        flex-direction: column;
-        gap: 12px;
-      }
-      .col {
-        flex: 1;
-      }
-      .media {
-        display: block;
-        max-width: 420px;
-      }
-
-      /* small list style */
-      .slot-note {
-        background: rgba(255, 255, 255, 0.01);
+        align-items: center;
+        justify-content: space-between;
         padding: 10px;
         border-radius: 10px;
-        border: 1px dashed rgba(255, 255, 255, 0.03);
-        font-size: 0.92rem;
-        color: var(--muted);
+        background: transparent;
+        border: 1px dashed rgba(0, 0, 0, 0.03);
       }
-
-      /* CSS:ABOUT-END */
-
-      /* =========================
-   CSS:SKILLS-START
-   專屬技能 / 模組區塊樣式（占位）
-   ========================= */
-      .module-grid {
-        display: grid;
-        grid-template-columns: 1fr;
-        gap: 12px;
-      }
-      .module-card {
-        padding: 12px;
-        background: linear-gradient(
-          180deg,
-          rgba(255, 255, 255, 0.01),
-          rgba(0, 0, 0, 0.02)
-        );
-        border-radius: 10px;
-        border: 1px solid rgba(255, 255, 255, 0.02);
-      }
-      .module-title {
+      .task .title {
         font-weight: 600;
-        margin-bottom: 6px;
-        font-size: 0.98rem;
-        color: var(--text);
       }
-      .module-desc {
+      .task .meta {
+        font-size: 12px;
         color: var(--muted);
-        font-size: 0.92rem;
-        margin: 0;
       }
 
-      /* CSS:SKILLS-END */
-
-      /* =========================
-   CSS:PROJECTS-START
-   Projects / 示例卡片
-   ========================= */
-      .project-list {
+      /* Restock & Learning */
+      .list {
         display: flex;
         flex-direction: column;
-        gap: 12px;
+        gap: 8px;
       }
-      .project-item {
-        display: flex;
-        gap: 12px;
+
+      /* Bottom area: history */
+      .history {
+        max-height: 180px;
+        overflow: auto;
+        padding-right: 6px;
+      }
+
+      /* Modal */
+      .modal-backdrop {
+        position: fixed;
+        inset: 0;
+        background: rgba(10, 8, 6, 0.35);
+        display: none;
         align-items: center;
+        justify-content: center;
+        padding: 16px;
       }
-      .project-thumb {
-        width: 84px;
-        height: 64px;
-        flex: 0 0 84px;
-        border-radius: 8px;
-        overflow: hidden;
+      .modal {
+        width: 100%;
+        max-width: 540px;
+        background: var(--card);
+        border-radius: 14px;
+        padding: 16px;
       }
-      .project-meta {
+      .modal h3 {
+        margin: 0 0 8px 0;
+      }
+      .form-row {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 10px;
+      }
+      .form-row .col {
         flex: 1;
       }
-      .project-title {
-        margin: 0;
-        font-size: 0.98rem;
-        color: var(--text);
-      }
-      .project-sub {
-        margin: 4px 0 0 0;
+      label {
+        display: block;
+        font-size: 12px;
         color: var(--muted);
-        font-size: 0.9rem;
+        margin-bottom: 4px;
+      }
+      input,
+      select,
+      textarea {
+        width: 100%;
+        padding: 10px;
+        border-radius: 8px;
+        border: 1px solid rgba(0, 0, 0, 0.06);
+        background: transparent;
+      }
+      .modal-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 8px;
+        margin-top: 12px;
+      }
+      .btn-ghost {
+        background: transparent;
+        border: 1px solid rgba(0, 0, 0, 0.06);
+        padding: 8px 12px;
+        border-radius: 10px;
       }
 
-      /* CSS:PROJECTS-END */
+      /* mobile bottom nav */
+      .bottom-nav {
+        display: none;
+        position: fixed;
+        left: 50%;
+        transform: translateX(-50%);
+        bottom: 18px;
+        background: var(--card);
+        padding: 8px;
+        border-radius: 20px;
+        box-shadow: var(--glass-shadow);
+        gap: 8px;
+      }
+      .bottom-nav button {
+        border: none;
+        background: transparent;
+        padding: 8px 12px;
+        border-radius: 10px;
+      }
+      @media (max-width: 700px) {
+        header .top-tabs {
+          display: none;
+        }
+        .bottom-nav {
+          display: flex;
+        }
+        header {
+          margin-bottom: 10px;
+        }
+        .wrap {
+          padding: 12px;
+        }
+      }
 
-      /* =========================
-   CSS:CONTACT-START
-   聯絡 / footer 區塊樣式
-   ========================= */
-      .site-footer {
-        padding: 18px 0 34px;
-        border-top: 1px solid rgba(255, 255, 255, 0.03);
-        margin-top: 18px;
+      /* small helpers */
+      .muted {
+        color: var(--muted);
+        font-size: 13px;
       }
-      .footer-inner {
+      .flex {
         display: flex;
-        flex-direction: column;
-        gap: 12px;
-        align-items: flex-start;
-      }
-      .socials {
-        display: flex;
-        gap: 10px;
         align-items: center;
+        gap: 8px;
       }
-      .legal {
-        color: var(--muted);
-        font-size: 0.9rem;
-      }
-      /* CSS:CONTACT-END */
-
-      /* =========================
-   CSS:RWD-START
-   手機優先 RWD（至少一個 @media）
-   ========================= */
-      @media (min-width: 520px) {
-        .hero-title {
-          font-size: 1.6rem;
-        }
-        .hero-inner {
-          flex-direction: row;
-          align-items: center;
-          justify-content: space-between;
-        }
-        .hero-copy {
-          flex: 1;
-          padding-right: 18px;
-        }
-        .hero-illustration {
-          flex: 0 0 360px;
-          max-width: 360px;
-        }
+      .divider {
+        height: 1px;
+        background: rgba(0, 0, 0, 0.03);
+        margin: 12px 0;
+        border-radius: 2px;
       }
 
-      @media (min-width: 768px) {
-        .page {
-          padding: 0 24px;
-        }
-        .two-col {
-          flex-direction: row;
-        }
-        .module-grid {
-          grid-template-columns: repeat(2, 1fr);
-        }
-        .project-list {
-          flex-direction: row;
-          flex-wrap: wrap;
-        }
-        .project-item {
-          width: 48%;
-        }
+      /* drag handle */
+      .drag-handle {
+        cursor: grab;
+        padding: 6px;
+        border-radius: 6px;
       }
 
-      @media (min-width: 1200px) {
-        body {
-          padding-top: 80px;
-        }
-        .nav {
-          padding: 18px 24px;
-        }
-        .logo {
-          font-size: 1.05rem;
-        }
-        .nav-link {
-          font-size: 1rem;
-          padding: 10px 12px;
-        }
+      /* completed style */
+      .completed {
+        opacity: 0.6;
+        text-decoration: line-through;
       }
-      /* CSS:RWD-END */
     </style>
   </head>
   <body>
-    <div class="page">
-      <header class="site-header" role="banner">
-        <nav class="nav" aria-label="主要導覽">
-          <div class="logo" aria-hidden="false">
-            <span class="mark">UL</span> <span>生活任務整合系統</span>
+    <div class="wrap">
+      <header>
+        <div class="brand">
+          <!-- <div class="logo">U</div> -->
+          <div class="logo">
+            <img src="./icon-g.png" alt="Unified Life OS" />
           </div>
-          <div class="nav-list" role="navigation" aria-label="頁面連結">
-            <a class="nav-link" href="#hero">首頁</a>
-            <a class="nav-link" href="#todo">待辦管理</a>
-            <a class="nav-link" href="#restock">補貨系統</a>
-            <a class="nav-link" href="#learning">學習進度</a>
-            <a class="nav-link" href="#contact">聯絡</a>
+          <div>
+            <div class="title">Unified Life OS</div>
+            <div class="subtitle">減少認知疲勞 • 聚焦當下的生活系統</div>
           </div>
-        </nav>
+        </div>
+
+        <div class="controls">
+          <nav class="top-tabs" role="tablist">
+            <button class="tab active" data-tab="focus">📌 今日焦點</button>
+            <!-- <button class="tab" data-tab="tasks">📝 任務</button>
+            <button class="tab" data-tab="restock">🛒 補貨</button>
+            <button class="tab" data-tab="learning">📚 學習進度</button>
+            <button class="tab" data-tab="settings">⚙️ 設定</button> -->
+          </nav>
+          <button id="addBtn" class="icon-btn">＋ 新增</button>
+        </div>
       </header>
 
       <main>
-        <div class="container">
-          <!-- SECTION:HERO-START -->
-          <section
-            id="hero"
-            class="section section-hero"
-            aria-labelledby="hero-heading"
-          >
-            <div class="hero-inner container-card">
-              <div class="hero-copy">
-                <h1 id="hero-heading" class="hero-title">
-                  生活任務整合系統（Unified Life OS）
-                </h1>
-                <p class="hero-sub">
-                  將「今日重點」、「補貨提醒」與「學習進度」用同一套視覺與邏輯整合，降低資訊碎片、提升專注與決策效率。
-                </p>
-
-                <div class="hero-cta">
-                  <button type="button" aria-label="開始使用">
-                    開始使用範例骨架
-                  </button>
-                  <a
-                    class="nav-link"
-                    href="#todo"
-                    style="
-                      padding: 8px 10px;
-                      background: transparent;
-                      border-radius: 8px;
-                    "
-                    >查看待辦範例</a
-                  >
-                </div>
-
-                <div class="feature-row" aria-hidden="true">
-                  <span class="feature-pill">Today Focus</span>
-                  <span class="feature-pill">Smart Lists</span>
-                  <span class="feature-pill">Progress Insight</span>
-                </div>
-
-                <p class="slot-note" style="margin-top: 10px">
-                  之後會用 Section SDD 的 Prompt 產生正式文案與版面，再把整個
-                  section 貼回來取代這一區。請開發者將新的 section
-                  程式碼整段貼在
-                  <!-- SECTION:HERO-START -->
-                  與
-                  <!-- SECTION:HERO-END -->
-                  之間，完全取代現在這一區。
-                </p>
-              </div>
-
-              <div class="hero-illustration">
-                <img
-                  src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=1200&q=80&auto=format&fit=crop"
-                  alt="人在筆電前規劃日常任務與筆記的工作桌面"
-                  loading="lazy"
-                />
-              </div>
-            </div>
-          </section>
-          <!-- SECTION:HERO-END -->
-
-          <div class="divider" role="separator" aria-hidden="true"></div>
-
-          <!-- SECTION:ABOUT-START -->
-          <section
-            id="about"
-            class="section section-about"
-            aria-labelledby="about-heading"
-          >
-            <div class="container-card">
-              <h2 id="about-heading">專案簡介（占位）</h2>
-              <p>
-                這裡是占位內容：說明此骨架的目的與整體結構，方便開發者理解後續要替換的區塊與資料流。
-              </p>
-              <p class="slot-note">
-                之後會用 Section SDD 的 Prompt 產生新的 section，請把新的
-                section 程式碼整段貼在
-                <!-- SECTION:ABOUT-START -->
-                與
-                <!-- SECTION:ABOUT-END -->
-                之間，完全取代現在這一區。
-              </p>
-            </div>
-          </section>
-          <!-- SECTION:ABOUT-END -->
-
-          <div class="divider" role="separator" aria-hidden="true"></div>
-
-          <!-- SECTION:SKILLS-START -->
-          <section
-            id="skills"
-            class="section section-skills"
-            aria-labelledby="skills-heading"
-          >
-            <div class="container-card">
-              <h2 id="skills-heading">快速模組預覽（占位）</h2>
-              <div class="module-grid" aria-hidden="false">
-                <div class="module-card">
-                  <div class="module-title">Today Focus（占位）</div>
-                  <p class="module-desc">
-                    示意：今日任務卡片、優先級、倒數計時器。
-                  </p>
-                </div>
-                <div class="module-card">
-                  <div class="module-title">Smart Lists（占位）</div>
-                  <p class="module-desc">
-                    示意：基於類型的智能分類與快速篩選。
-                  </p>
-                </div>
-              </div>
-
-              <p class="slot-note">
-                之後會用 Section SDD 的 Prompt 產生新的 section，請把新的
-                section 程式碼整段貼在
-                <!-- SECTION:SKILLS-START -->
-                與
-                <!-- SECTION:SKILLS-END -->
-                之間，完全取代現在這一區。
-              </p>
-            </div>
-          </section>
-          <!-- SECTION:SKILLS-END -->
-
-          <div class="divider" role="separator" aria-hidden="true"></div>
-
-          <!-- SECTION:PROJECTS-START -->
-          <section
-            id="projects"
-            class="section section-projects"
-            aria-labelledby="projects-heading"
-          >
-            <div class="container-card">
-              <h2 id="projects-heading">示例內容區（占位）</h2>
-              <p class="muted">此處展示將被替換的功能模組或範例卡片。</p>
-
-              <div class="project-list" aria-hidden="true">
-                <article class="project-item card">
-                  <div class="project-thumb">
-                    <img
-                      src="https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=800&q=60&auto=format&fit=crop"
-                      alt="筆電工作流程示意圖"
-                      loading="lazy"
-                    />
-                  </div>
-                  <div class="project-meta">
-                    <h3 class="project-title">待辦模組範例</h3>
-                    <p class="project-sub">包含任務清單、標籤、到期日。</p>
-                  </div>
-                </article>
-
-                <article class="project-item card">
-                  <div class="project-thumb">
-                    <img
-                      src="https://images.unsplash.com/photo-1541560052-3b9f8f9f9d2c?w=800&q=60&auto=format&fit=crop"
-                      alt="日常補貨與購物清單示意"
-                      loading="lazy"
-                    />
-                  </div>
-                  <div class="project-meta">
-                    <h3 class="project-title">補貨系統範例</h3>
-                    <p class="project-sub">包含最低庫存提醒與快速補貨清單。</p>
-                  </div>
-                </article>
-              </div>
-
-              <p class="slot-note">
-                之後會用 Section SDD 的 Prompt 產生新的 section，請把新的
-                section 程式碼整段貼在
-                <!-- SECTION:PROJECTS-START -->
-                與
-                <!-- SECTION:PROJECTS-END -->
-                之間，完全取代現在這一區。
-              </p>
-            </div>
-          </section>
-          <!-- SECTION:PROJECTS-END -->
-
-          <div class="divider" role="separator" aria-hidden="true"></div>
-
-          <!-- SECTION:TODO-START -->
-          <section
-            id="todo"
-            class="section section-todo"
-            aria-labelledby="todo-heading"
-          >
-            <div class="container-card">
-              <h2 id="todo-heading">待辦管理 區（占位）</h2>
-              <p>
-                這裡是「待辦管理 區」的占位：示意 Today
-                Focus、任務卡、優先級篩選。未來會替換為互動版元件。
-              </p>
-              <p class="slot-note">
-                之後會用 Section SDD 的 Prompt 產生新的 section，請把新的
-                section 程式碼整段貼在
-                <!-- SECTION:TODO-START -->
-                與
-                <!-- SECTION:TODO-END -->
-                之間，完全取代現在這一區。
-              </p>
-            </div>
-          </section>
-          <!-- SECTION:TODO-END -->
-
-          <div class="divider" role="separator" aria-hidden="true"></div>
-
-          <!-- SECTION:RESTOCK-START -->
-          <section
-            id="restock"
-            class="section section-restock"
-            aria-labelledby="restock-heading"
-          >
-            <div class="container-card">
-              <h2 id="restock-heading">補貨系統 區（占位）</h2>
-              <p>
-                這裡是「補貨系統
-                區」的占位：示意庫存條、補貨建議、下次補貨日期提醒等欄位。
-              </p>
-              <div class="media" style="margin-top: 10px">
-                <img
-                  src="https://images.unsplash.com/photo-1515548212611-0a3f9a393e3f?w=1200&q=60&auto=format&fit=crop"
-                  alt="家中生活用品的儲藏架與補貨示意"
-                  loading="lazy"
-                />
-              </div>
-              <p class="slot-note">
-                之後會用 Section SDD 的 Prompt 產生新的 section，請把新的
-                section 程式碼整段貼在
-                <!-- SECTION:RESTOCK-START -->
-                與
-                <!-- SECTION:RESTOCK-END -->
-                之間，完全取代現在這一區。
-              </p>
-            </div>
-          </section>
-          <!-- SECTION:RESTOCK-END -->
-
-          <div class="divider" role="separator" aria-hidden="true"></div>
-
-          <!-- SECTION:LEARNING-START -->
-          <section
-            id="learning"
-            class="section section-learning"
-            aria-labelledby="learning-heading"
-          >
-            <div class="container-card">
-              <h2 id="learning-heading">學習進度管理 區（占位）</h2>
-              <p>
-                這裡是「學習進度管理
-                區」的占位：示意課程清單、已完成百分比、學習日誌採樣。
-              </p>
-              <p class="slot-note">
-                之後會用 Section SDD 的 Prompt 產生新的 section，請把新的
-                section 程式碼整段貼在
-                <!-- SECTION:LEARNING-START -->
-                與
-                <!-- SECTION:LEARNING-END -->
-                之間，完全取代現在這一區。
-              </p>
-            </div>
-          </section>
-          <!-- SECTION:LEARNING-END -->
-
-          <div class="divider" role="separator" aria-hidden="true"></div>
-
-          <!-- SECTION:CONTACT-START -->
-          <section
-            id="contact"
-            class="section section-contact"
-            aria-labelledby="contact-heading"
-          >
-            <div class="container-card">
-              <h2 id="contact-heading">聯絡（占位）</h2>
-              <p class="muted">
-                如需協助或回報 bug，請使用下方連結聯絡開發者。
-              </p>
-
-              <div
-                class="card"
-                style="display: flex; flex-direction: column; gap: 8px"
-              >
-                <div
-                  class="flex"
-                  style="justify-content: space-between; align-items: center"
-                >
-                  <div>
-                    <div class="muted">Email</div>
-                    <div>
-                      <a href="mailto:hello@example.com">hello@example.com</a>
-                    </div>
-                  </div>
-                  <div>
-                    <div class="muted">GitHub</div>
-                    <div>
-                      <a
-                        href="https://github.com/yourname"
-                        target="_blank"
-                        rel="noopener"
-                        >github.com/yourname</a
-                      >
-                    </div>
-                  </div>
-                  <div>
-                    <div class="muted">LinkedIn</div>
-                    <div>
-                      <a
-                        href="https://www.linkedin.com/in/yourname"
-                        target="_blank"
-                        rel="noopener"
-                        >linkedin.com/in/yourname</a
-                      >
-                    </div>
-                  </div>
-                </div>
-
-                <p class="slot-note">
-                  之後會用 Section SDD 的 Prompt 產生新的 section，請把新的
-                  section 程式碼整段貼在
-                  <!-- SECTION:CONTACT-START -->
-                  與
-                  <!-- SECTION:CONTACT-END -->
-                  之間，完全取代現在這一區。
-                </p>
-              </div>
-            </div>
-          </section>
-          <!-- SECTION:CONTACT-END -->
-        </div>
-        <!-- /.container -->
-      </main>
-
-      <footer class="site-footer" role="contentinfo">
-        <div class="container footer-inner">
-          <div style="display: flex; flex-direction: column; gap: 8px">
+        <section id="leftCol">
+          <!-- Focus card -->
+          <div id="focusCard" class="card">
             <div
-              class="flex"
               style="
+                display: flex;
                 justify-content: space-between;
                 align-items: center;
-                gap: 12px;
               "
             >
-              <div class="muted">
-                © <span id="year"></span> 生活任務整合系統
-              </div>
-              <div class="socials">
-                <a class="nav-link" href="mailto:hello@example.com">Email</a>
-                <a
-                  class="nav-link"
-                  href="https://github.com/yourname"
-                  target="_blank"
-                  rel="noopener"
-                  >GitHub</a
-                >
-                <a
-                  class="nav-link"
-                  href="https://www.linkedin.com/in/yourname"
-                  target="_blank"
-                  rel="noopener"
-                  >LinkedIn</a
-                >
-              </div>
+              <div style="font-weight: 700">今日焦點</div>
+              <div class="muted">只顯示最重要的 3 件事</div>
             </div>
+            <div class="divider"></div>
+            <div class="focus-list" id="focusList"></div>
 
-            <div class="legal muted">
-              本頁為 Phase 1 骨架（單一
-              index.html）範例，所有區塊均為占位，方便開發者以 Section SDD
-              逐區替換實作。
+            <div class="divider"></div>
+            <div
+              style="
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+              "
+            >
+              <div class="muted">到期與提醒</div>
+              <button class="btn-ghost" onclick="showTab('tasks')">
+                檢視全部
+              </button>
+            </div>
+            <div id="dueList" style="margin-top: 10px"></div>
+          </div>
+
+          <!-- Tasks card -->
+          <div id="tasksCard" class="card" style="margin-top: 16px">
+            <div
+              style="
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 8px;
+              "
+            >
+              <div style="font-weight: 700">任務清單</div>
+              <div class="muted">拖曳以排序 • 完成項目會移至歷史</div>
+            </div>
+            <div
+              class="task-list"
+              id="taskList"
+              ondragover="allowDrop(event)"
+            ></div>
+
+            <div class="divider"></div>
+            <div>
+              <div
+                style="
+                  display: flex;
+                  justify-content: space-between;
+                  align-items: center;
+                "
+              >
+                <div class="muted">已完成歷史</div>
+                <button class="btn-ghost" onclick="clearHistory()">清除</button>
+              </div>
+              <div class="history" id="historyList"></div>
             </div>
           </div>
-        </div>
-      </footer>
+        </section>
+
+        <aside id="rightCol">
+          <div class="card small">
+            <div
+              style="
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+              "
+            >
+              <div style="font-weight: 700">補貨提醒</div>
+              <div class="muted">自動循環顯示</div>
+            </div>
+            <div class="list" id="restockList" style="margin-top: 10px"></div>
+          </div>
+
+          <div class="card small" style="margin-top: 14px">
+            <div
+              style="
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+              "
+            >
+              <div style="font-weight: 700">學習進度</div>
+              <div class="muted">快速 +10% 更新</div>
+            </div>
+            <div class="list" id="learningList" style="margin-top: 10px"></div>
+          </div>
+
+          <!-- <div class="card small" style="margin-top: 14px">
+            <div style="font-weight: 700">設定 (預留)</div>
+            <div class="muted" style="margin-top: 8px">
+              提醒方式、主題模式、匯入/匯出、雲端同步
+            </div>
+          </div> -->
+        </aside>
+      </main>
+
+      <!-- Bottom nav for mobile -->
+      <div class="bottom-nav" role="navigation">
+        <button onclick="showTab('focus')">📌</button>
+        <button onclick="showTab('tasks')">📝</button>
+        <button onclick="showTab('restock')">🛒</button>
+        <button onclick="showTab('learning')">📚</button>
+        <button onclick="showTab('settings')">⚙️</button>
+      </div>
     </div>
-    <!-- /.page -->
+
+    <!-- Modal (shared) -->
+    <div class="modal-backdrop" id="modalBackdrop">
+      <div class="modal">
+        <h3 id="modalTitle">新增項目</h3>
+        <form id="itemForm" onsubmit="event.preventDefault(); saveItem();">
+          <div class="form-row">
+            <div class="col">
+              <label>類型</label>
+              <select id="field-type" required>
+                <option value="task">任務</option>
+                <option value="restock">補貨</option>
+                <option value="learning">學習紀錄</option>
+              </select>
+            </div>
+            <div class="col">
+              <label id="label-name">名稱</label>
+              <input
+                id="field-name"
+                placeholder="例如：繳房租 / 買濾芯 / 前端課程"
+                required
+              />
+            </div>
+          </div>
+
+          <div class="form-row" id="optionalRow">
+            <div class="col">
+              <label>優先度</label>
+              <select id="field-priority">
+                <option value="low">低</option>
+                <option value="mid">中</option>
+                <option value="high">高</option>
+              </select>
+            </div>
+            <div class="col" id="dateCol">
+              <label>截止日期</label>
+              <input id="field-date" type="date" />
+            </div>
+          </div>
+
+          <div class="form-row" id="restockRow" style="display: none">
+            <div class="col">
+              <label>補貨間隔 (天)</label>
+              <select id="field-interval">
+                <option value="7">7</option>
+                <option value="30">30</option>
+                <option value="90">90</option>
+                <option value="custom">自訂</option>
+              </select>
+            </div>
+            <div class="col" id="customIntervalCol" style="display: none">
+              <label>自訂天數</label>
+              <input id="field-interval-custom" type="number" min="1" />
+            </div>
+          </div>
+
+          <div class="form-row" id="progressRow" style="display: none">
+            <div class="col">
+              <label>進度 %</label>
+              <input id="field-progress" type="number" min="0" max="100" />
+            </div>
+            <div class="col">
+              <label>備註</label>
+              <input id="field-note" />
+            </div>
+          </div>
+
+          <div class="modal-actions">
+            <button type="button" class="btn-ghost" onclick="closeModal()">
+              取消
+            </button>
+            <button type="submit" class="icon-btn">儲存</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
     <script>
-      // 小幅互動：填入年份、避免空連結（必要性檢查） (function(){ var y = new Date().getFullYear(); var el = document.getElementById('year'); if(el) el.textContent = y; // 對於所有 nav-link，若是錨點滾動則採用平滑滾動 var links = document.querySelectorAll('.nav-link[href^="#"]'); links.forEach(function(a){ a.addEventListener('click', function(e){ var target = document.querySelector(this.getAttribute('href')); if(target){ e.preventDefault(); target.scrollIntoView({behavior:'smooth',block:'start'}); // 更新 focus for accessibility target.setAttribute('tabindex','-1'); target.focus({preventScroll:true}); } }, {passive:false}); }); })();
+      /* -------------------- Data layer (localStorage prototype) -------------------- */
+      const STORAGE_KEY = "ulo_data_v1";
+      let state = loadState();
+
+      function loadState() {
+        try {
+          const raw = localStorage.getItem(STORAGE_KEY);
+          if (raw) return JSON.parse(raw);
+        } catch (e) {}
+        return { tasks: [], restocks: [], learnings: [], history: [] };
+      }
+      function saveState() {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      }
+
+      /* -------------------- Helpers -------------------- */
+      function uid() {
+        return "id_" + Math.random().toString(36).slice(2, 9);
+      }
+      function daysBetween(a, b) {
+        return Math.ceil((new Date(b) - new Date(a)) / (1000 * 60 * 60 * 24));
+      }
+
+      /* -------------------- Rendering -------------------- */
+      function render() {
+        renderFocus();
+        renderTasks();
+        renderRestocks();
+        renderLearning();
+        renderHistory();
+      }
+
+      /* Focus: choose top 3 by high priority + nearest deadline */
+      function renderFocus() {
+        const focusEl = document.getElementById("focusList");
+        focusEl.innerHTML = "";
+        const all = [...state.tasks];
+        // filter incomplete
+        const open = all.filter((t) => !t.done);
+        // sort by priority (high->mid->low) then by date proximity
+        const prio = { high: 0, mid: 1, low: 2 };
+        open.sort((a, b) => {
+          if (a.priority !== b.priority)
+            return prio[a.priority] - prio[b.priority];
+          if (a.due && b.due) return new Date(a.due) - new Date(b.due);
+          if (a.due) return -1;
+          if (b.due) return 1;
+          return 0;
+        });
+        const top3 = open.slice(0, 3);
+        top3.forEach((t) => {
+          const el = document.createElement("div");
+          el.className = "focus-item";
+          const dot = document.createElement("div");
+          dot.className = "dot " + t.priority;
+          el.innerHTML = `<div style="flex:1"><div style='font-weight:700'>${escapeHtml(
+            t.title
+          )}</div><div class='muted' style='margin-top:6px'>${
+            t.due ? "截止：" + t.due : ""
+          }</div></div>`;
+          el.prepend(dot);
+          focusEl.appendChild(el);
+        });
+
+        // due list
+        const dueEl = document.getElementById("dueList");
+        dueEl.innerHTML = "";
+        const soon = open
+          .filter((t) => t.due)
+          .sort((a, b) => new Date(a.due) - new Date(b.due))
+          .slice(0, 6);
+        soon.forEach((t) => {
+          const d = document.createElement("div");
+          d.className = "muted";
+          d.style.marginTop = "6px";
+          const days = daysBetween(new Date(), new Date(t.due));
+          d.textContent = `${t.title} — 截止 ${t.due} (${days} 天)`;
+          dueEl.appendChild(d);
+        });
+      }
+
+      function renderTasks() {
+        const list = document.getElementById("taskList");
+        list.innerHTML = "";
+        state.tasks.forEach((t, idx) => {
+          const item = document.createElement("div");
+          item.className = "task";
+          item.setAttribute("draggable", "true");
+          item.dataset.id = t.id;
+          item.ondragstart = dragStart;
+          const left = document.createElement("div");
+          left.style.display = "flex";
+          left.style.alignItems = "center";
+          left.style.gap = "8px";
+          left.innerHTML = `<div class='drag-handle'>≡</div><div><div class='title ${
+            t.done ? "completed" : ""
+          }'>${escapeHtml(t.title)}</div><div class='meta'>${
+            t.due ? "截止：" + t.due : ""
+          } ${t.priority ? " • " + t.priority : ""}</div></div>`;
+          const right = document.createElement("div");
+          right.style.display = "flex";
+          right.style.alignItems = "center";
+          right.style.gap = "8px";
+          const doneBtn = document.createElement("button");
+          doneBtn.className = "btn-ghost";
+          doneBtn.textContent = t.done ? "Undo" : "完成";
+          doneBtn.onclick = () => toggleDone(t.id);
+          const editBtn = document.createElement("button");
+          editBtn.className = "btn-ghost";
+          editBtn.textContent = "編輯";
+          editBtn.onclick = () => openModalForEdit(t.id);
+          right.appendChild(doneBtn);
+          right.appendChild(editBtn);
+          item.appendChild(left);
+          item.appendChild(right);
+          list.appendChild(item);
+        });
+      }
+
+      function renderRestocks() {
+        const el = document.getElementById("restockList");
+        el.innerHTML = "";
+        // show items whose nextDate is today or earlier (remind) and also show upcoming
+        const now = new Date();
+        state.restocks.forEach((r) => {
+          const next = new Date(r.nextDate || r.startDate || Date.now());
+          const days = daysBetween(now, next);
+          const item = document.createElement("div");
+          item.className = "task";
+          item.innerHTML = `<div><div class='title'>${escapeHtml(
+            r.title
+          )}</div><div class='muted'>下次：${formatDate(
+            next
+          )} (${days} 天)</div></div><div style='display:flex;gap:8px;align-items:center'><button class='btn-ghost' onclick='snoozeRestock("${
+            r.id
+          }")'>稍後</button><button class='icon-btn' onclick='markRestocked("${
+            r.id
+          }")'>已補貨</button></div>`;
+          el.appendChild(item);
+        });
+      }
+
+      function renderLearning() {
+        const el = document.getElementById("learningList");
+        el.innerHTML = "";
+        state.learnings.forEach((l) => {
+          const item = document.createElement("div");
+          item.className = "task";
+          item.innerHTML = `<div><div class='title'>${escapeHtml(
+            l.title
+          )}</div><div class='muted'>進度：${l.progress || 0}% ${
+            l.note ? "• " + escapeHtml(l.note) : ""
+          }</div></div><div style='display:flex;gap:8px'><button class='btn-ghost' onclick='incProgress("${
+            l.id
+          }")'>+10%</button><button class='btn-ghost' onclick='openModalForEdit("${
+            l.id
+          }")'>編輯</button></div>`;
+          el.appendChild(item);
+        });
+      }
+
+      function renderHistory() {
+        const el = document.getElementById("historyList");
+        el.innerHTML = "";
+        state.history
+          .slice()
+          .reverse()
+          .forEach((h) => {
+            const d = document.createElement("div");
+            d.className = "muted";
+            d.style.marginTop = "6px";
+            d.textContent = `${h.title} • ${h.doneAt}`;
+            el.appendChild(d);
+          });
+      }
+
+      /* -------------------- Drag & Drop -------------------- */
+      let dragSrcId = null;
+      function dragStart(e) {
+        dragSrcId = e.target.dataset.id;
+      }
+      function allowDrop(e) {
+        e.preventDefault();
+      }
+      document.getElementById("taskList").addEventListener("drop", (e) => {
+        const target = e.target.closest(".task");
+        if (!target) return;
+        const targetId = target.dataset.id;
+        if (!dragSrcId || dragSrcId === targetId) return;
+        const srcIdx = state.tasks.findIndex((x) => x.id === dragSrcId);
+        const tgtIdx = state.tasks.findIndex((x) => x.id === targetId);
+        const [moved] = state.tasks.splice(srcIdx, 1);
+        state.tasks.splice(tgtIdx, 0, moved);
+        saveState();
+        render();
+      });
+
+      /* -------------------- Actions -------------------- */
+      function toggleDone(id) {
+        const idx = state.tasks.findIndex((t) => t.id === id);
+        if (idx === -1) return;
+        const t = state.tasks[idx];
+        if (!t.done) {
+          t.done = true;
+          t.doneAt = new Date().toLocaleString();
+          state.history.push({ title: t.title, doneAt: t.doneAt, id: uid() });
+          // remove from tasks list
+          state.tasks.splice(idx, 1);
+        } else {
+          // undo: move back
+          t.done = false;
+          state.tasks.push(t);
+        }
+        saveState();
+        render();
+      }
+
+      function clearHistory() {
+        if (confirm("確定清除已完成歷史？")) {
+          state.history = [];
+          saveState();
+          render();
+        }
+      }
+
+      function snoozeRestock(id) {
+        const r = state.restocks.find((x) => x.id === id);
+        if (!r) return;
+        const next = new Date(r.nextDate || r.startDate || Date.now());
+        next.setDate(next.getDate() + 7);
+        r.nextDate = formatDate(next);
+        saveState();
+        render();
+      }
+      function markRestocked(id) {
+        const r = state.restocks.find((x) => x.id === id);
+        if (!r) return;
+        const interval = parseInt(r.interval || 30, 10) || 30;
+        const next = new Date();
+        next.setDate(next.getDate() + interval);
+        r.nextDate = formatDate(next);
+        saveState();
+        render();
+      }
+
+      function incProgress(id) {
+        const l = state.learnings.find((x) => x.id === id);
+        if (!l) return;
+        l.progress = Math.min(100, (Number(l.progress) || 0) + 10);
+        if (l.progress >= 100)
+          state.history.push({
+            title: l.title + "（學習完成）",
+            doneAt: new Date().toLocaleString(),
+            id: uid(),
+          });
+        saveState();
+        render();
+      }
+
+      /* -------------------- Modal / Form -------------------- */
+      const backdrop = document.getElementById("modalBackdrop");
+      const form = document.getElementById("itemForm");
+      let editTarget = null;
+
+      document
+        .getElementById("addBtn")
+        .addEventListener("click", () => openModal());
+      document
+        .getElementById("field-type")
+        .addEventListener("change", onTypeChange);
+      document
+        .getElementById("field-interval")
+        .addEventListener("change", (e) => {
+          document.getElementById("customIntervalCol").style.display =
+            e.target.value === "custom" ? "block" : "none";
+        });
+
+      function onTypeChange() {
+        const t = document.getElementById("field-type").value;
+        document.getElementById("label-name").textContent =
+          t === "task" ? "任務名稱" : t === "restock" ? "商品名稱" : "課程名稱";
+        // show/hide rows
+        document.getElementById("dateCol").style.display =
+          t === "task" ? "block" : "none";
+        document.getElementById("restockRow").style.display =
+          t === "restock" ? "flex" : "none";
+        document.getElementById("progressRow").style.display =
+          t === "learning" ? "flex" : "none";
+      }
+
+      function openModal() {
+        editTarget = null;
+        document.getElementById("modalTitle").textContent = "新增項目";
+        form.reset();
+        onTypeChange();
+        backdrop.style.display = "flex";
+      }
+      function closeModal() {
+        backdrop.style.display = "none";
+      }
+
+      function openModalForEdit(id) {
+        // find item in each list
+        editTarget = { type: "", id: id };
+        let item = state.tasks.find((x) => x.id === id);
+        if (item) {
+          editTarget.type = "task";
+          fillForm(item);
+          backdrop.style.display = "flex";
+          return;
+        }
+        item = state.restocks.find((x) => x.id === id);
+        if (item) {
+          editTarget.type = "restock";
+          fillForm(item);
+          backdrop.style.display = "flex";
+          return;
+        }
+        item = state.learnings.find((x) => x.id === id);
+        if (item) {
+          editTarget.type = "learning";
+          fillForm(item);
+          backdrop.style.display = "flex";
+          return;
+        }
+      }
+
+      function fillForm(item) {
+        form.reset();
+        document.getElementById("field-type").value =
+          item.type || (item.interval ? "restock" : "task");
+        onTypeChange();
+        document.getElementById("field-name").value =
+          item.title || item.name || "";
+        if (item.priority)
+          document.getElementById("field-priority").value = item.priority;
+        if (item.due) document.getElementById("field-date").value = item.due;
+        if (item.interval)
+          document.getElementById("field-interval").value = String(
+            item.interval
+          );
+        if (item.nextDate)
+          document.getElementById("field-interval-custom").value =
+            item.nextDate;
+        if (item.progress != null)
+          document.getElementById("field-progress").value = item.progress;
+        if (item.note) document.getElementById("field-note").value = item.note;
+        document.getElementById("modalTitle").textContent = "編輯項目";
+      }
+
+      function saveItem() {
+        const type = document.getElementById("field-type").value;
+        const name = document.getElementById("field-name").value.trim();
+        const priority = document.getElementById("field-priority").value;
+        const due = document.getElementById("field-date").value || null;
+        const intervalSel = document.getElementById("field-interval").value;
+        const intervalCustom = document.getElementById(
+          "field-interval-custom"
+        ).value;
+        const progress = document.getElementById("field-progress").value;
+        const note = document.getElementById("field-note").value;
+
+        if (!name) return alert("請輸入名稱");
+
+        if (editTarget && editTarget.type === "task") {
+          const t = state.tasks.find((x) => x.id === editTarget.id);
+          if (t) {
+            t.title = name;
+            t.priority = priority;
+            t.due = due;
+            t.note = note;
+            saveState();
+            render();
+            closeModal();
+            return;
+          }
+        }
+        if (editTarget && editTarget.type === "restock") {
+          const r = state.restocks.find((x) => x.id === editTarget.id);
+          if (r) {
+            r.title = name;
+            r.interval =
+              intervalSel === "custom"
+                ? Number(intervalCustom)
+                : Number(intervalSel);
+            saveState();
+            render();
+            closeModal();
+            return;
+          }
+        }
+        if (editTarget && editTarget.type === "learning") {
+          const l = state.learnings.find((x) => x.id === editTarget.id);
+          if (l) {
+            l.title = name;
+            l.progress = Number(progress || 0);
+            l.note = note;
+            saveState();
+            render();
+            closeModal();
+            return;
+          }
+        }
+
+        // create new
+        if (type === "task") {
+          const obj = {
+            id: uid(),
+            title: name,
+            priority: priority || "low",
+            due: due || null,
+            type: "task",
+            createdAt: new Date().toISOString(),
+          };
+          state.tasks.push(obj);
+        } else if (type === "restock") {
+          const interval =
+            intervalSel === "custom"
+              ? Number(intervalCustom) || 30
+              : Number(intervalSel);
+          const start = formatDate(new Date());
+          const obj = {
+            id: uid(),
+            title: name,
+            interval: interval,
+            startDate: start,
+            nextDate: start,
+            type: "restock",
+          };
+          state.restocks.push(obj);
+        } else if (type === "learning") {
+          const obj = {
+            id: uid(),
+            title: name,
+            progress: Number(progress || 0),
+            note: note || "",
+            type: "learning",
+          };
+          state.learnings.push(obj);
+        }
+        saveState();
+        render();
+        closeModal();
+      }
+
+      /* -------------------- Utilities -------------------- */
+      function formatDate(d) {
+        const dt = new Date(d);
+        if (isNaN(dt)) return "";
+        return dt.toISOString().slice(0, 10);
+      }
+
+      function escapeHtml(s) {
+        return String(s)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;");
+      }
+
+      /* -------------------- Tab switching (simple, hides irrelevant sections on small screens) -------------------- */
+      function showTab(tab) {
+        document
+          .querySelectorAll(".tab")
+          .forEach((b) => b.classList.toggle("active", b.dataset.tab === tab));
+        const left = document.getElementById("leftCol");
+        const right = document.getElementById("rightCol");
+        // small screen: only show relevant card(s)
+        if (window.innerWidth <= 700) {
+          if (tab === "focus") {
+            left.style.display = "block";
+            left
+              .querySelectorAll(".card")
+              .forEach((c) => (c.style.display = "block"));
+            right.style.display = "none";
+          } else if (tab === "tasks") {
+            left.style.display = "block";
+            left
+              .querySelectorAll(".card")
+              .forEach((c) => (c.style.display = "none"));
+            document.getElementById("tasksCard").style.display = "block";
+            right.style.display = "none";
+          } else if (tab === "restock") {
+            left.style.display = "none";
+            right.style.display = "block";
+            right
+              .querySelectorAll(".card")
+              .forEach((c) => (c.style.display = "none"));
+            right.querySelector("[innerText]");
+            document.querySelector(
+              "#rightCol .card:nth-child(1)"
+            ).style.display = "block";
+          } else if (tab === "learning") {
+            left.style.display = "none";
+            right.style.display = "block";
+            right
+              .querySelectorAll(".card")
+              .forEach((c) => (c.style.display = "none"));
+            document.querySelector(
+              "#rightCol .card:nth-child(2)"
+            ).style.display = "block";
+          } else {
+            left.style.display = "none";
+            right.style.display = "block";
+            right
+              .querySelectorAll(".card")
+              .forEach((c) => (c.style.display = "block"));
+          }
+        } else {
+          left.style.display = "block";
+          right.style.display = "block";
+          document.querySelectorAll(".tab").forEach((b) => {});
+        }
+      }
+
+      /* initial render */
+      render();
+
+      // close modal when clicking backdrop
+      backdrop.addEventListener("click", (e) => {
+        if (e.target === backdrop) closeModal();
+      });
+
+      // accessibility: Esc to close
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") closeModal();
+      });
+
+      /* -------------------- On first load: sample data for demo (only if empty) -------------------- */
+      if (
+        state.tasks.length === 0 &&
+        state.restocks.length === 0 &&
+        state.learnings.length === 0
+      ) {
+        state.tasks.push({
+          id: uid(),
+          title: "繳房租",
+          priority: "high",
+          due: nextDateStr(27),
+          type: "task",
+        });
+        state.tasks.push({
+          id: uid(),
+          title: "準備失業補助課程報名",
+          priority: "high",
+          due: nextDateStr(13),
+          type: "task",
+        });
+        state.tasks.push({
+          id: uid(),
+          title: "整理電腦檔案",
+          priority: "mid",
+          due: null,
+          type: "task",
+        });
+        state.restocks.push({
+          id: uid(),
+          title: "衛生紙",
+          interval: 90,
+          startDate: formatDate(new Date()),
+          nextDate: formatDate(new Date()),
+        });
+        state.learnings.push({
+          id: uid(),
+          title: "前端框架課程",
+          progress: 20,
+          note: "每週兩堂",
+          type: "learning",
+        });
+        saveState();
+        render();
+      }
+
+      function nextDateStr(days) {
+        const d = new Date();
+        d.setDate(d.getDate() + days);
+        return formatDate(d);
+      }
     </script>
   </body>
 </html>
